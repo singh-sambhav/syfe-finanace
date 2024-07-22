@@ -1,0 +1,73 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id       Int @id @default(autoincrement())
+  email    String @unique
+  name     String 
+  password String
+  currentIncome Int @default(0)
+  activeSession Active_Sessions[]
+  transactions  Transactions[]
+  categories    Category[]
+  targets       Target[]
+
+}
+
+model Active_Sessions {
+  id       Int @id @default(autoincrement())
+  userId   Int @unique
+  user     User @relation(fields:[userId] , references: [id], onDelete: Cascade)
+  refresh_token String
+}
+
+model Transactions{
+  id      Int @id @default(autoincrement())
+  userId  Int 
+  user    User    @relation(fields: [userId], references: [id] , onDelete: Cascade)
+  amount  Float
+  date    DateTime
+  category String
+  description String?
+  type     transactionType
+}
+
+
+model Category{
+  id      Int @id @default(autoincrement())
+  name    String
+  userId  Int
+  count   Int @default(0)
+  user     User  @relation(fields: [userId], references: [id] , onDelete: Cascade)
+  type     transactionType
+  @@unique([userId,name])
+}
+
+model Target {
+  id Int @id @default(autoincrement())
+  userId Int
+  user User  @relation(fields: [userId], references: [id] , onDelete: Cascade)
+  targetAmount Int
+  createdAt  DateTime
+  targetDate DateTime
+  completed  Boolean @default(false)
+
+}
+
+
+enum transactionType{
+  INCOME
+  EXPENSE
+}
